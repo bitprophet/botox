@@ -145,6 +145,9 @@ class AWS(object):
         if missing:
             msgs = ", ".join([params[x] for x in missing])
             raise ValueError("Missing the following parameters: %s" % msgs) 
+        # AMI convenience
+        if not kwargs['ami'].startswith('ami-'):
+            kwargs['ami'] = 'ami-' + kwargs['ami']
 
         # Create instance
         self.log("Creating '%s' (a %s instance of %s)..." % (
