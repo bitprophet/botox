@@ -33,7 +33,7 @@ instance.Instance.name = _instance_name
 
 
 class AWS(object):
-    def __init__(self, **kwargs):
+    def __init__(self, verbose=False, **kwargs):
         """
         Set up AWS connection with the following possible parameters:
 
@@ -48,13 +48,24 @@ class AWS(object):
           ``$AWS_REGION``.
         * ``zone``: AWS zone ID (e.g. ``"us-east-1d"``.). Default:
           ``$AWS_ZONE``.
+        * ``keypair``: EC2 login authentication keypair name. Default:
+          ``$AWS_KEYPAIR``.
+        * ``security_groups``: EC2 security groups instances should default to.
+          Default: ``$AWS_SECURITY_GROUPS``.
+
+        Other behavior-controlling options:
+
+        * ``verbose``: Whether or not to print out detailed info about what's
+          going on.
         """
         # Merge values from kwargs/shell env
         required = "access_key_id secret_access_key region".split()
-        optional = "ami zone size".split()
+        optional = "ami zone size keypair security_groups".split()
         for var in required + optional:
             env_value = os.environ.get("AWS_%s" % var.upper())
             setattr(self, var, kwargs.get(var, env_value))
+        # Handle other kwargs
+        self.verbose = verbose
         # Must at least have credentials + region
         missing = filter(lambda x: not getattr(self, x), required)
         if missing:
