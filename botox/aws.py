@@ -98,6 +98,15 @@ class AWS(object):
         if self.verbose:
             return puts(*args, **kwargs)
 
+    @property
+    def instances(self):
+        """
+        Generator yielding all instances in this connection's account.
+        """
+        for reservation in self.get_all_instances():
+            for instance in reservation.instances:
+                yield instance
+
     def create(self, hostname, **kwargs):
         """
         Create new EC2 instance named ``hostname``.
