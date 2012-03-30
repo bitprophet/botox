@@ -13,6 +13,7 @@ import time
 
 from boto.ec2 import regions as _ec2_regions
 from boto.ec2.connection import EC2Connection as _EC2
+from boto.ec2 import instance
 from boto.exception import EC2ResponseError as _ResponseError
 from prettytable import PrettyTable as _Table
 
@@ -20,6 +21,15 @@ from .utils import puts
 
 
 BLANK = '-'
+
+
+# Monkeypatching
+@property
+def _instance_name(self):
+    return self.tags.get('Name', BLANK)
+
+instance.Instance.name = _instance_name
+
 
 
 class AWS(object):
