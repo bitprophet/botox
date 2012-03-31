@@ -23,13 +23,24 @@ from .utils import puts
 BLANK = '-'
 
 
-# Monkeypatching
+#
+# Monkeypatch boto's Instance for convenience's sake.
+#
+# Arguably better than the
+# alternatives: returning our own Instance wrapper class in some situations --
+# will only work for anything we don't proxy; or write shitty stub wrappers for
+# every API call that returns Instances; etc.
+#
+
 @property
 def _instance_name(self):
     return self.tags.get('Name', BLANK)
 
-instance.Instance.name = _instance_name
+def _instance_set_name(self, name):
+    return self.add_tag('Name', name)
 
+instance.Instance.name = _instance_name
+instance.Instance.rename = _instance_set_name
 
 
 class AWS(object):
