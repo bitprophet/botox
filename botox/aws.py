@@ -7,7 +7,6 @@
 
 
 import os
-import pprint
 import sys
 import time
 
@@ -15,7 +14,6 @@ from boto.ec2 import regions as _ec2_regions
 from boto.ec2.connection import EC2Connection as _EC2
 from boto.ec2 import instance
 from boto.exception import EC2ResponseError as _ResponseError
-from prettytable import PrettyTable as _Table
 from decorator import decorator
 
 from .utils import puts
@@ -70,9 +68,7 @@ def requires(*params):
 
     None values are considered omissions.
     """
-    print "requires decorator with params %r" % (params,)
     def requires(f, self, *args, **kwargs):
-        print "requires inner func (%r, %r, %r, %r)" % (f, self, args, kwargs)
         missing = filter(lambda x: kwargs.get(x) is None, params)
         if missing:
             msgs = ", ".join([PARAMETERS[x] for x in missing])
