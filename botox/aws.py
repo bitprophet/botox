@@ -160,26 +160,20 @@ class AWS(object):
         if not kwargs['ami'].startswith('ami-'):
             kwargs['ami'] = 'ami-' + kwargs['ami']
 
-        # Create instance
+        # Create
         self.log("Creating '%s' (a %s instance of %s)..." % (
             hostname, kwargs['size'], kwargs['ami']))
-        image = self.get_image(kwargs['ami'])
-        groups = self.get_all_security_groups(kwargs['security_groups'])
-        instance = image.run(
-            instance_type=kwargs['size'],
-            key_name=kwargs['keypair'],
-            placement=kwargs['zone'],
-            security_groups=groups
-        ).instances[0]
+        instance = self._create(hostname, kwargs)
         self.log("done.\n")
 
-        # Name it
+        # Name
         self.log("Tagging as '%s'..." % hostname)
         try:
-            instance.add_tag('Name', hostname)
+            instance.rename(hostname)
+        # One-time retry for API errors when setting tags
         except _ResponseError:
             time.sleep(1)
-            instance.add_tag('Name', hostname)
+            instance.rename(hostname)
         self.log("done.\n")
 
         # Wait for it to finish booting
@@ -191,4 +185,15 @@ class AWS(object):
             instance.update()
         self.log("done.\n")
 
+        return instance
+
+    def _create(self, hostname, kwargs):
+        image = self.get_image(kwargs['ami'])
+        groups = self.get_all_security_groups(kwargs['security_groups'])
+        instance = image.run(
+            instance_type=kwargs['size'],
+            key_name=kwargs['keypair'],
+            placement=kwargs['zone'],
+            security_groups=groups
+        ).instances[0]
         return instance
