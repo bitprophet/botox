@@ -20,7 +20,7 @@ setup(
     url='https://github.com/bitprophet/botox',
 
     packages=["botox"],
-    install_requires=["boto>=2.0", "prettytable"],
+    install_requires=["boto>=2.0", "prettytable", "decorator>=3.0"],
 
     classifiers=[
           'Development Status :: 3 - Alpha',

@@ -16,6 +16,7 @@ from boto.ec2.connection import EC2Connection as _EC2
 from boto.ec2 import instance
 from boto.exception import EC2ResponseError as _ResponseError
 from prettytable import PrettyTable as _Table
+from decorator import decorator
 
 from .utils import puts
 
@@ -41,6 +42,42 @@ def _instance_set_name(self, name):
 
 instance.Instance.name = _instance_name
 instance.Instance.rename = _instance_set_name
+
+
+PARAMETERS = {
+    'ami': "an AMI to use",
+    'size': "an instance size",
+    'keypair': "an access keypair name",
+    'zone': "a zone ID",
+    'security_groups': "security groups",
+}
+
+@decorator
+def defaults(f, self, *args, **kwargs):
+    """
+    For ``PARAMETERS`` keys, replace None ``kwargs`` with ``self`` attr values.
+
+    Should be applied on the top of any decorator stack so other decorators see
+    the "right" kwargs.
+    """
+    for name in PARAMETERS.keys():
+        kwargs[name] = kwargs.get(name, getattr(self, name))
+    return f(self, *args, **kwargs)
+
+def requires(*params):
+    """
+    Raise ValueError if any ``params`` are omitted from the decorated kwargs.
+
+    None values are considered omissions.
+    """
+    print "requires decorator with params %r" % (params,)
+    def requires(f, self, *args, **kwargs):
+        print "requires inner func (%r, %r, %r, %r)" % (f, self, args, kwargs)
+        missing = filter(lambda x: kwargs.get(x) is None, params)
+        if missing:
+            msgs = ", ".join([PARAMETERS[x] for x in missing])
+            raise ValueError("Missing the following parameters: %s" % msgs)
+    return decorator(requires)
 
 
 class AWS(object):
@@ -118,47 +155,22 @@ class AWS(object):
             for instance in reservation.instances:
                 yield instance
 
+    @defaults
+    @requires('ami', 'size', 'keypair', 'security_groups', 'zone')
     def create(self, hostname, **kwargs):
         """
         Create new EC2 instance named ``hostname``.
 
-        Available keyword arguments follow. All values will default to the
-        attributes set when initializing this AWS object, e.g. if ``size`` is
-        omitted, it will fall back to ``self.size``.
-
-        * ``size``
-        * ``ami``
-        * ``keypair``
-        * ``zone``
-        * ``security_groups``
+        You may specify keyword arguments matching those of ``__init__`` (e.g.
+        ``size``, ``ami``) to override any defaults given when the object was
+        created, or to fill in parameters not given at initialization time.
 
         This method returns a ``boto.EC2.instance.Instance`` object.
-
-        Example usage::
-
-            AWS(credentials).create(
-                hostname='web1.example.com',
-                size='m1.large',
-                ami='abc123'
-            )
         """
-        # Parameter handling
-        params = {
-            'ami': "an AMI to use",
-            'size': "an instance size",
-            'keypair': "an access keypair name",
-            'zone': "a zone ID",
-            'security_groups': "security groups",
-        }
-        for var, msg in params.iteritems():
-            kwargs[var] = kwargs.get(var, getattr(self, var))
-        missing = filter(lambda x: not kwargs[x], params.keys())
-        if missing:
-            msgs = ", ".join([params[x] for x in missing])
-            raise ValueError("Missing the following parameters: %s" % msgs) 
         # AMI convenience
-        if not kwargs['ami'].startswith('ami-'):
-            kwargs['ami'] = 'ami-' + kwargs['ami']
+        ami = kwargs['ami']
+        if not ami.startswith('ami-'):
+            ami = 'ami-' + ami
 
         # Create
         self.log("Creating '%s' (a %s instance of %s)..." % (
