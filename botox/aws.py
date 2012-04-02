@@ -224,3 +224,19 @@ class AWS(object):
             security_groups=groups
         ).instances[0]
         return instance
+
+    def get(self, arg):
+        """
+        Return instance object with given EC2 ID or nametag.
+        """
+        try:
+            reservations = self.get_all_instances(filters={'tag:Name': [arg]})
+            instance = reservations[0].instances[0]
+        except IndexError:
+            try:
+                instance = self.get_all_instances([arg])[0].instances[0]
+            except IndexError:
+                err = "Can't find any instance with name or ID '%s'" % arg
+                print >>sys.stderr, err
+                sys.exit(1)
+        return instance
