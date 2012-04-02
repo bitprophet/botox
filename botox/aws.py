@@ -44,13 +44,19 @@ instance.Instance.name = _instance_name
 instance.Instance.rename = _instance_set_name
 
 
+def _ami(x):
+    if not x.startswith('ami-'):
+        x = 'ami-' + x
+    return x
+
 PARAMETERS = {
-    'ami': "an AMI to use",
-    'size': "an instance size",
-    'keypair': "an access keypair name",
-    'zone': "a zone ID",
-    'security_groups': "security groups",
+    'ami': {'msg': "an AMI to use", 'transform': _ami},
+    'size': {'msg': "an instance size"},
+    'keypair': {'msg': "an access keypair name"},
+    'zone': {'msg': "a zone ID"},
+    'security_groups': {'msg': "security groups"},
 }
+
 
 @decorator
 def defaults(f, self, *args, **kwargs):
@@ -59,9 +65,13 @@ def defaults(f, self, *args, **kwargs):
 
     Should be applied on the top of any decorator stack so other decorators see
     the "right" kwargs.
+
+    Will also apply transformations found in ``TRANSFORMS``.
     """
-    for name in PARAMETERS.keys():
+    for name, data in PARAMETERS.iteritems():
         kwargs[name] = kwargs.get(name, getattr(self, name))
+        if 'transform' in data:
+            kwargs[name] = data['transform'](kwargs[name])
     return f(self, *args, **kwargs)
 
 
@@ -81,7 +91,7 @@ def requires(*params):
     def requires(f, self, *args, **kwargs):
         missing = filter(lambda x: kwargs.get(x) is None, params)
         if missing:
-            msgs = ", ".join([PARAMETERS[x] for x in missing])
+            msgs = ", ".join([PARAMETERS[x]['msg'] for x in missing])
             raise ValueError("Missing the following parameters: %s" % msgs)
     return decorator(requires)
 
@@ -141,6 +151,9 @@ class AWS(object):
         return getattr(self.connection, name)
 
     def get_image(self, name):
+        func = PARAMETERS['ami'].get('transform')
+        if func:
+            name = func(name)
         return self.get_all_images([name])[0]
 
     def log(self, *args, **kwargs):
@@ -173,11 +186,6 @@ class AWS(object):
 
         This method returns a ``boto.EC2.instance.Instance`` object.
         """
-        # AMI convenience
-        ami = kwargs['ami']
-        if not ami.startswith('ami-'):
-            ami = 'ami-' + ami
-
         # Create
         self.log("Creating '%s' (a %s instance of %s)..." % (
             hostname, kwargs['size'], kwargs['ami']))
