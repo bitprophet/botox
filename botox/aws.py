@@ -207,7 +207,7 @@ class AWS(object):
         self.log("Waiting for boot: ")
         tick = 5
         while instance.state != 'running':
-            self.log(".")
+            self.log(".", end='')
             time.sleep(tick)
             instance.update()
         self.log("done.\n")
