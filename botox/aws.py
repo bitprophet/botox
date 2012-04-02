@@ -93,6 +93,7 @@ def requires(*params):
         if missing:
             msgs = ", ".join([PARAMETERS[x]['msg'] for x in missing])
             raise ValueError("Missing the following parameters: %s" % msgs)
+        return f(self, *args, **kwargs)
     return decorator(requires)
 
 
