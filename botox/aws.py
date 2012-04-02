@@ -30,6 +30,8 @@ BLANK = '-'
 # will only work for anything we don't proxy; or write shitty stub wrappers for
 # every API call that returns Instances; etc.
 #
+# For now, choosing convenience over explicitness. May revisit.
+#
 
 @property
 def _instance_name(self):
@@ -62,11 +64,19 @@ def defaults(f, self, *args, **kwargs):
         kwargs[name] = kwargs.get(name, getattr(self, name))
     return f(self, *args, **kwargs)
 
+
 def requires(*params):
     """
     Raise ValueError if any ``params`` are omitted from the decorated kwargs.
 
     None values are considered omissions.
+
+    Example usage on an AWS() method:
+
+        @requires('zone', 'security_groups')
+        def my_aws_method(self, custom_args, **kwargs):
+            # We'll only get here if 'kwargs' contained non-None values for
+            # both 'zone' and 'security_groups'.
     """
     def requires(f, self, *args, **kwargs):
         missing = filter(lambda x: kwargs.get(x) is None, params)
