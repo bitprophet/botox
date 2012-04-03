@@ -99,7 +99,7 @@ def requires(*params):
 
 
 class AWS(object):
-    def __init__(self, verbose=False, **kwargs):
+    def __init__(self, verbose=False, config=None, **kwargs):
         """
         Set up AWS connection with the following possible parameters:
 
@@ -125,6 +125,8 @@ class AWS(object):
 
         * ``verbose``: Whether or not to print out detailed info about what's
           going on.
+        * ``config``: Custom config data (a dict, potentially nested), e.g.
+          site-specific info like a subnet-ID-to-name mapping.
         """
         # Merge values from kwargs/shell env
         required = "access_key_id secret_access_key region".split()
@@ -134,6 +136,7 @@ class AWS(object):
             setattr(self, var, kwargs.get(var, env_value))
         # Handle other kwargs
         self.verbose = verbose
+        self.config = config or {}
         # Must at least have credentials + region
         missing = filter(lambda x: not getattr(self, x), required)
         if missing:
