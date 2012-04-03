@@ -240,3 +240,17 @@ class AWS(object):
                 print >>sys.stderr, err
                 sys.exit(1)
         return instance
+
+    def terminate(self, arg):
+        """
+        Terminate instance with given EC2 ID or nametag.
+        """
+        instance = self.get(arg)
+        self.log("Terminating %s (%s): " % (instance.name, instance.id), end='')
+        instance.rename("old-%s" % instance.name)
+        instance.terminate()
+        while instance.state != 'terminated':
+            time.sleep(5)
+            self.log(".", end='')
+            instance.update()
+        self.log("done.")
