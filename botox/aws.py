@@ -55,6 +55,7 @@ PARAMETERS = {
     'keypair': {'msg': "an access keypair name"},
     'zone': {'msg': "a zone ID"},
     'security_groups': {'msg': "security groups"},
+    'subnet': {'msg': "VPC subnet"},
 }
 
 
@@ -117,6 +118,8 @@ class AWS(object):
           ``$AWS_KEYPAIR``.
         * ``security_groups``: EC2 security groups instances should default to.
           Default: ``$AWS_SECURITY_GROUPS``.
+        * ``subnet``: VPC subnet ID, sans the 'subnet-' prefix. Default:
+          ``$AWS_SUBNET``.
 
         Other behavior-controlling options:
 
@@ -125,7 +128,7 @@ class AWS(object):
         """
         # Merge values from kwargs/shell env
         required = "access_key_id secret_access_key region".split()
-        optional = "ami zone size keypair security_groups".split()
+        optional = list(set(PARAMETERS.keys()) - set(required))
         for var in required + optional:
             env_value = os.environ.get("AWS_%s" % var.upper())
             setattr(self, var, kwargs.get(var, env_value))
@@ -241,6 +244,9 @@ class AWS(object):
             placement=kwargs['zone'],
             security_group_ids=groups
         )
+        # Subnet optional, if present implies VPC
+        if self.subnet:
+            params['subnet_id'] = 'subnet-' + self.subnet
         instance = image.run(**params).instances[0]
         return instance
 
