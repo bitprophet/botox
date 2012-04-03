@@ -149,7 +149,7 @@ class AWS(object):
         region = filter(lambda x: x.name == self.region, regions)[0]
         boto_args.update(region=region)
         # Get a connection to that region
-        self.connection= _EC2(**boto_args)
+        self.connection = _EC2(**boto_args)
 
     def __getattr__(self, name):
         return getattr(self.connection, name)
