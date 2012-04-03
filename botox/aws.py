@@ -157,6 +157,19 @@ class AWS(object):
             name = func(name)
         return self.get_all_images([name])[0]
 
+    def get_security_group_id(self, name):
+        """
+        Take name string, give back security group ID.
+
+        To get around VPC's API being stupid.
+        """
+        # Memoize entire list of groups
+        if not hasattr(self, '_security_groups'):
+            self._security_groups = {}
+            for group in self.get_all_security_groups():
+                self._security_groups[group.name] = group.id
+        return self._security_groups[name]
+
     def log(self, *args, **kwargs):
         """
         If ``self.verbose`` is True, acts as a proxy for ``utils.puts``.
@@ -216,13 +229,19 @@ class AWS(object):
 
     def _create(self, hostname, kwargs):
         image = self.get_image(kwargs['ami'])
-        groups = self.get_all_security_groups(kwargs['security_groups'])
-        instance = image.run(
+        # Security groups need special treatment to handle VPC groups
+        groups = kwargs['security_groups']
+        if isinstance(groups, basestring):
+            groups = [groups]
+        groups = map(self.get_security_group_id, groups)
+        # Build kwarg dict to handle optional args
+        params = dict(
             instance_type=kwargs['size'],
             key_name=kwargs['keypair'],
             placement=kwargs['zone'],
-            security_groups=groups
-        ).instances[0]
+            security_group_ids=groups
+        )
+        instance = image.run(**params).instances[0]
         return instance
 
     def get(self, arg):
