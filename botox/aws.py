@@ -69,7 +69,7 @@ def defaults(f, self, *args, **kwargs):
     Will also apply transformations found in ``TRANSFORMS``.
     """
     for name, data in PARAMETERS.iteritems():
-        kwargs[name] = kwargs.get(name, getattr(self, name))
+        kwargs[name] = kwargs.get(name) or getattr(self, name)
         if 'transform' in data:
             kwargs[name] = data['transform'](kwargs[name])
     return f(self, *args, **kwargs)
