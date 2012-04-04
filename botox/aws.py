@@ -6,7 +6,7 @@
 # * Christopher Groskopf (onyxfish)
 
 
-from contextlib import contextmanager
+from functools import partial
 import os
 import sys
 import time
@@ -17,7 +17,7 @@ from boto.ec2 import instance
 from boto.exception import EC2ResponseError as _ResponseError
 from decorator import decorator
 
-from .utils import puts
+from .utils import puts, msg
 
 
 BLANK = '-'
@@ -202,13 +202,9 @@ class AWS(object):
         if self.verbose:
             return puts(*args, **kwargs)
 
-    @contextmanager
-    def msg(self, text):
-        if not text.endswith(": "):
-            text += ": "
-        self.log(text, end="", flush=True)
-        yield
-        self.log("done.")
+    @property
+    def msg(self):
+        return partial(msg, printer=self.log)
 
     @property
     def instances(self):

@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 import sys
 
 
@@ -16,3 +17,12 @@ def puts(text, end="\n", flush=True, stream=sys.stdout):
     stream.write(str(text) + end)
     if flush:
         stream.flush()
+
+
+@contextmanager
+def msg(text, printer=puts):
+    if not text.endswith(": "):
+        text += ": "
+    printer(text, end="", flush=True)
+    yield
+    printer("done.")
