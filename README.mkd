@@ -4,9 +4,9 @@ Botox is a lightweight, high level wrapper around the Amazon Web Services API.
 It leverages the excellent and comprehensive
 [Boto](http://boto.readthedocs.org/en/latest/) library.
 
-Boto closely mirrors the AWS API structure, and as such has a handful of spots
-that could use some smoothing over because common tasks require a bit of extra
-work.  Boto**x** is an attempt at said smoothing over.
+Boto closely mirrors the AWS API structure, and as such has spots that could
+use smoothing over -- many common tasks require extra work.  Boto**x** is an
+attempt at said smoothing over.
 
 It's BSD licensed and supports Python 2.6+.
 
