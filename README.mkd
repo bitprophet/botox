@@ -29,3 +29,11 @@ Botox is in the very early stages of development; the API is being felt out and
 we're rapidly adding more feature targets (e.g.:
 create/list/destroy/attach/mount EBS volumes). We may also start soliciting
 patches and/or feedback from peers who have similar internal codebases.
+
+## Coming soon
+
+* Aforementioned EBS support
+* Actual, you know, docs
+* Some sort of (probably optional) integration with a task runner like
+  [Invoke](https://github.com/pyinvoke/invoke) so you can
+  create/list/delete/etc from the command line.
