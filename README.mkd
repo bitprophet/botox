@@ -1,0 +1,31 @@
+## Intro
+
+Botox is a lightweight, high level wrapper around the Amazon Web Services API.
+It leverages the excellent and comprehensive
+[Boto](http://boto.readthedocs.org/en/latest/) library.
+
+Boto closely mirrors the AWS API structure, and as such has a handful of spots
+that could use some smoothing over because common tasks require a bit of extra
+work.  Boto**x** is an attempt at said smoothing over.
+
+It's BSD licensed and supports Python 2.6+.
+
+## Features
+
+* Want a list of all instances in your account? No more manually looping over
+  your account's "reservations" first, simply instantiate an `AWS` object and
+  look at its `instances` generator attribute.
+* Simple instance creation, complete with 'Name' tag updating, automatic AMI
+  lookup based on ID, VPC security group name (not just ID) support, etc.
+* Instance termination which can look up the instance to destroy by name or ID,
+  and automatically renames the terminated instance -- avoids namespace
+  conflicts during rapid create-test-destroy-recreate cycles.
+* Automatic proxying of unfound attributes to the actual Boto connection object
+  (so anything Botox isn't tweaking can still be accessed easily.)
+
+## Development
+
+Botox is in the very early stages of development; the API is being felt out and
+we're rapidly adding more feature targets (e.g.:
+create/list/destroy/attach/mount EBS volumes). We may also start soliciting
+patches and/or feedback from peers who have similar internal codebases.
