@@ -6,6 +6,7 @@
 # * Christopher Groskopf (onyxfish)
 
 
+from contextlib import contextmanager
 import os
 import sys
 import time
@@ -201,6 +202,14 @@ class AWS(object):
         if self.verbose:
             return puts(*args, **kwargs)
 
+    @contextmanager
+    def msg(self, text):
+        if not text.endswith(": "):
+            text += ": "
+        self.log(text, end="", flush=True)
+        yield
+        self.log("done.")
+
     @property
     def instances(self):
         """
@@ -223,29 +232,28 @@ class AWS(object):
         This method returns a ``boto.EC2.instance.Instance`` object.
         """
         # Create
-        self.log("Creating '%s' (a %s instance of %s)..." % (
-            hostname, kwargs['size'], kwargs['ami']))
-        instance = self._create(hostname, kwargs)
-        self.log("done.\n")
+        creating = "Creating '%s' (a %s instance of %s)" % (
+            hostname, kwargs['size'], kwargs['ami']
+        )
+        with self.msg(creating):
+            instance = self._create(hostname, kwargs)
 
         # Name
-        self.log("Tagging as '%s'..." % hostname)
-        try:
-            instance.rename(hostname)
-        # One-time retry for API errors when setting tags
-        except _ResponseError:
-            time.sleep(1)
-            instance.rename(hostname)
-        self.log("done.\n")
+        with self.msg("Tagging as '%s'" % hostname):
+            try:
+                instance.rename(hostname)
+            # One-time retry for API errors when setting tags
+            except _ResponseError:
+                time.sleep(1)
+                instance.rename(hostname)
 
         # Wait for it to finish booting
-        self.log("Waiting for boot: ")
-        tick = 5
-        while instance.state != 'running':
-            self.log(".", end='')
-            time.sleep(tick)
-            instance.update()
-        self.log("done.\n")
+        with self.msg("Waiting for boot: "):
+            tick = 5
+            while instance.state != 'running':
+                self.log(".", end='')
+                time.sleep(tick)
+                instance.update()
 
         return instance
 
@@ -290,11 +298,10 @@ class AWS(object):
         Terminate instance with given EC2 ID or nametag.
         """
         instance = self.get(arg)
-        self.log("Terminating %s (%s): " % (instance.name, instance.id), end='')
-        instance.rename("old-%s" % instance.name)
-        instance.terminate()
-        while instance.state != 'terminated':
-            time.sleep(5)
-            self.log(".", end='')
-            instance.update()
-        self.log("done.")
+        with self.msg("Terminating %s (%s): " % (instance.name, instance.id)):
+            instance.rename("old-%s" % instance.name)
+            instance.terminate()
+            while instance.state != 'terminated':
+                time.sleep(5)
+                self.log(".", end='')
+                instance.update()
