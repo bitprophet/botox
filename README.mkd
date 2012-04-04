@@ -17,6 +17,10 @@ It's BSD licensed and supports Python 2.6+.
   look at its `instances` generator attribute.
 * Simple instance creation, complete with 'Name' tag updating, automatic AMI
   lookup based on ID, VPC security group name (not just ID) support, etc.
+* Straightforward instance name access via `<instance>.name` (vs looking up the
+  'Name' tag every time) and renaming via `<instance>.rename(new_name)`.
+    * These are currently implemented by :monkey:patching but this may change
+    in the future :pensive:
 * Instance termination which can look up the instance to destroy by name or ID,
   and automatically renames the terminated instance -- avoids namespace
   conflicts during rapid create-test-destroy-recreate cycles.
