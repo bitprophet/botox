@@ -143,17 +143,21 @@ class AWS(object):
         if missing:
             msg = ", ".join(missing)
             raise ValueError("Missing required parameters: %s" % msg)
-        # Auth creds
-        boto_args = { 
-            'aws_access_key_id': self.access_key_id,
-            'aws_secret_access_key': self.secret_access_key,
-        }
-        # Obtain our default region
-        regions = _ec2_regions(**boto_args)
-        region = filter(lambda x: x.name == self.region, regions)[0]
-        boto_args.update(region=region)
-        # Get a connection to that region
-        self.connection = _EC2(**boto_args)
+
+    @property
+    def connection(self):
+        if not hasattr(self, '_connection'):
+            # Auth creds
+            boto_args = {
+                'aws_access_key_id': self.access_key_id,
+                'aws_secret_access_key': self.secret_access_key,
+            }
+            # Obtain our default region
+            regions = _ec2_regions(**boto_args)
+            region = filter(lambda x: x.name == self.region, regions)[0]
+            boto_args.update(region=region)
+            self._connection = _EC2(**boto_args)
+        return self._connection
 
     def __getattr__(self, name):
         return getattr(self.connection, name)
