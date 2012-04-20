@@ -229,6 +229,10 @@ class AWS(object):
         ``size``, ``ami``) to override any defaults given when the object was
         created, or to fill in parameters not given at initialization time.
 
+        Additional parameters that are instance-specific:
+
+        * ``ip``: The static private IP address for the new host.
+
         This method returns a ``boto.EC2.instance.Instance`` object.
         """
         # Create
@@ -274,6 +278,9 @@ class AWS(object):
         # Subnet optional, if present implies VPC
         if self.subnet:
             params['subnet_id'] = 'subnet-' + self.subnet
+        # Private IP optional
+        if 'ip' in kwargs:
+            params['private_ip_address'] = kwargs['ip']
         instance = image.run(**params).instances[0]
         return instance
 
