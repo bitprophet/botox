@@ -276,8 +276,8 @@ class AWS(object):
             security_group_ids=groups
         )
         # Subnet optional, if present implies VPC
-        if self.subnet:
-            params['subnet_id'] = 'subnet-' + self.subnet
+        if 'subnet' in kwargs:
+            params['subnet_id'] = 'subnet-' + kwargs['subnet']
         # Private IP optional
         if 'ip' in kwargs:
             params['private_ip_address'] = kwargs['ip']
