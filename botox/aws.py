@@ -197,6 +197,22 @@ class AWS(object):
             subnet = BLANK
         return subnet
 
+    def get_subnet_id(self, name):
+        """
+        Return subnet ID for given ``name``, if it exists.
+
+        E.g. with a subnet mapping of ``{'abc123': 'ops', '67fd56': 'prod'}``,
+        ``get_subnet_id('ops')`` would return ``'abc123'``. If the map has
+        non-unique values, the first matching key will be returned.
+
+        If no match is found, the given ``name`` is returned as-is. This works
+        well for e.g. normalizing names-or-IDs to just IDs.
+        """
+        for subnet_id, subnet_name in self.config['subnets'].iteritems():
+            if subnet_name == name:
+                return subnet_id
+        return name
+
     def log(self, *args, **kwargs):
         """
         If ``self.verbose`` is True, acts as a proxy for ``utils.puts``.
@@ -277,7 +293,9 @@ class AWS(object):
         )
         # Subnet optional, if present implies VPC
         if 'subnet' in kwargs:
-            params['subnet_id'] = 'subnet-' + kwargs['subnet']
+            # Also do convenience reverse lookup in subnet map
+            subnet_id = self.get_subnet_id(kwargs['subnet'])
+            params['subnet_id'] = 'subnet-' + subnet_id
         # Private IP optional
         if 'ip' in kwargs:
             params['private_ip_address'] = kwargs['ip']
