@@ -13,6 +13,9 @@ setup(
     name='botox',
     version=botox.__version__,
     description='High level Boto (AWS) wrapper. Gives boto a facelift!',
+    long_description="""This is an unsupported alpha release! Use with caution.
+
+Dev install: https://github.com/bitprophet/botox/tarball/master#egg=botox-dev""",
     license='BSD',
 
     author='Jeff Forcier',
