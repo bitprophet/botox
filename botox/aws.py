@@ -279,6 +279,8 @@ class AWS(object):
 
     def _create(self, hostname, kwargs):
         image = self.get_image(kwargs['ami'])
+        if image is None:
+            raise ValueError("AMI %r doesn't appear to exist!" % kwargs['ami'])
         # Security groups need special treatment to handle VPC groups
         groups = kwargs['security_groups']
         if isinstance(groups, basestring):
