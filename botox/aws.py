@@ -166,7 +166,7 @@ class AWS(object):
         func = PARAMETERS['ami'].get('transform')
         if func:
             name = func(name)
-        return self.get_all_images([name])[0]
+        return self.connection.get_image(name)
 
     def get_security_group_id(self, name):
         """
