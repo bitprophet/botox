@@ -314,10 +314,10 @@ class AWS(object):
         except IndexError:
             try:
                 instance = self.get_all_instances([arg])[0].instances[0]
-            except IndexError:
+            except (_ResponseError, IndexError):
+                # TODO: encapsulate actual exception for debugging
                 err = "Can't find any instance with name or ID '%s'" % arg
-                print >>sys.stderr, err
-                sys.exit(1)
+                raise ValueError(err)
         return instance
 
     def get_volumes_for_instance(self, arg, device=None):
