@@ -22,6 +22,23 @@ from .utils import puts, msg
 
 BLANK = '-'
 
+# Size specifiers ordered by instance cost (yes: m2.xlarge is CHEAPER than
+# m1.xlarge)
+SIZES = """
+    t1.micro
+    m1.small
+    m1.medium
+    c1.medium
+    m1.large
+    m2.xlarge
+    m1.xlarge
+    c1.xlarge
+    m2.2xlarge
+    cc1.4xlarge
+    m2.4xlarge
+    cg1.4xlarge
+    cc2.8xlarge
+""".split()
 
 #
 # Monkeypatch boto's Instance for convenience's sake.
